@@ -52,7 +52,7 @@ def filter_object(obj, keep=lambda v: not callable(v)):
     if isinstance(obj, dict):
         return {k:filter_object(v, keep) for (k,v) in obj.items() if keep(v)}
     if isinstance(obj, list):
-        return [filter_object(v, keep) for v in obj if not keep(v)]
+        return [filter_object(v, keep) for v in obj if keep(v)]
     return obj
 
 class WrapSpawner(Spawner):
