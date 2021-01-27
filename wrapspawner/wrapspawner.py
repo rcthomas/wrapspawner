@@ -45,6 +45,16 @@ def _yield_val(x=None):
     f.set_result(x)
     return f
 
+# Utility to filter out non-JSONable things, default just callable
+def filter_object(obj, keep=lambda v: not callable(v)):
+    if not callable(keep):
+        raise TypeError("Argument 'keep' must be callable")
+    if isinstance(obj, dict):
+        return {k:filter_object(v, keep) for (k,v) in obj.items() if keep(v)}
+    if isinstance(obj, list):
+        return [filter_object(v, keep) for v in obj if not keep(v)]
+    return obj
+
 class WrapSpawner(Spawner):
 
     # Grab this from constructor args in case some Spawner ever wants it
@@ -106,7 +116,7 @@ class WrapSpawner(Spawner):
 
     def get_state(self):
         state = super().get_state()
-        state['child_conf'] = self.child_config
+        state['child_conf'] = filter_object(self.child_config)
         if self.child_spawner:
             self.child_state = state['child_state'] = self.child_spawner.get_state()
         return state
